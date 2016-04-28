@@ -1,0 +1,7 @@
+blight-violation
+
+ViolationCode  >200 unique value
+PaymentStatus  4 unique value
+ViolationCategory   0 or 1   ????
+all kinds of fees  
+
