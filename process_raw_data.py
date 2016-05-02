@@ -364,20 +364,28 @@ del all_features['i']
 
 cv_set = StratifiedKFold( truth_label, 5, shuffle = True, random_state = 0)
 
-n_estimators = 1000
-max_depth = 10
-min_sample_split = 20
-min_sample_leaf = 10
-n_jobs = -1
 
+if True:
+    n_estimators = 2000
+    max_depth = 20
+    min_sample_split = 20
+    min_sample_leaf = 5
+    n_jobs = -1
+    max_features = 'auto'
 
-#RandomForestClassifier
-# 
-clf = ExtraTreesClassifier(n_estimators = n_estimators, 
-                             max_depth = max_depth,
-                             min_samples_split = min_sample_split, 
-                             min_samples_leaf = min_sample_leaf,
-                             n_jobs=n_jobs, random_state=0, verbose=1 )
+    clf = RandomForestClassifier(n_estimators = n_estimators, 
+                                 max_depth = max_depth,
+                                 min_samples_split = min_sample_split, 
+                                 min_samples_leaf = min_sample_leaf,
+                                 max_features = max_features,
+                                 n_jobs=n_jobs, random_state=0, verbose=1 )
+else:
+    clf = ExtraTreesClassifier(n_estimators = n_estimators, 
+                                 max_depth = max_depth,
+                                 min_samples_split = min_sample_split, 
+                                 min_samples_leaf = min_sample_leaf,
+                                 n_jobs=n_jobs, random_state=0, verbose=1 )
+    
 #clf.fit( all_features.as_matrix(), truth_label.as_matrix())                             
 
 X = all_features.as_matrix()
@@ -385,6 +393,38 @@ y = truth_label.as_matrix()
 cv_score = cross_validation.cross_val_score( clf, X, y, cv = 5)
     
 print cv_score.mean()
+
+
+# For single feature
+clf.fit( X, y )
+f = pd.DataFrame( {'Importance': clf.feature_importances_, 'Feature': all_features.columns })
+f.sort_values( ['Importance'], inplace = True )
+
+clf_single = RandomForestClassifier(n_estimators = n_estimators, 
+                                 max_depth = max_depth,
+                                 min_samples_split = min_sample_split, 
+                                 min_samples_leaf = min_sample_leaf,
+                                 max_features = max_features,
+                                 n_jobs=n_jobs, random_state=0, verbose=1 )
+
+
+f.index = [''] * len( f )
+
+n_top_feature = 1
+feature_list = f['Feature'][-n_top_feature :]
+#clf_single.fit( all_features[feature_list].as_matrix(), truth_label.as_matrix() )
+#print clf_single.score( all_features[feature_list].as_matrix(), truth_label.as_matrix() )
+cv_single_score = cross_validation.cross_val_score( clf_single, all_features[feature_list].as_matrix(), truth_label.as_matrix(), cv = 5)
+print cv_single_score.mean()
+
+clf_all = RandomForestClassifier(n_estimators = n_estimators, 
+                                 max_depth = max_depth,
+                                 min_samples_split = min_sample_split, 
+                                 min_samples_leaf = min_sample_leaf,
+                                 max_features = max_features,
+                                 n_jobs=n_jobs, random_state=0, verbose=1 )
+clf_all.fit( X, y )
+print clf_all.score( X, y )
 
 
 
